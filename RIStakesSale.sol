@@ -1,29 +1,25 @@
 pragma solidity ^0.4.13;
-library SafeMath {
-    
+library SafeMath {    
   function mul(uint256 a, uint256 b) internal pure returns (uint256) {
     uint256 c = a * b;
     assert(a == 0 || c / a == b);
     return c;
   }
- 
   function div(uint256 a, uint256 b) internal pure returns (uint256) {
     uint256 c = a / b;
     return c;
   }
- 
   function sub(uint256 a, uint256 b) internal pure returns (uint256) {
     assert(b <= a);
     return a - b;
   }
- 
   function add(uint256 a, uint256 b) internal pure returns (uint256) {
     uint256 c = a + b;
     assert(c >= a);
     return c;
-  }
-  
+  } 
 }
+
 contract ERC20Basic {
   uint256 public totalSupply;
   function balanceOf(address who) public constant returns (uint256);
@@ -40,17 +36,15 @@ contract BasicToken is ERC20Basic {
   using SafeMath for uint256;
   bool teamStakesFrozen = false;
   mapping(address => uint256) balances;
-  address public owner;
-  
+  address public owner;  
   function BasicToken() public {
     owner = msg.sender;
-  }
-  
+  }  
   modifier notFrozen() {
     require(msg.sender != owner || (msg.sender == owner && !teamStakesFrozen));
     _;
   }
-
+  
   /**
   * @dev transfer token for a specified address
   * @param _to The address to transfer to.
@@ -78,9 +72,7 @@ contract BasicToken is ERC20Basic {
 
 }
 contract StandardToken is ERC20, BasicToken {
-
   mapping (address => mapping (address => uint256)) internal allowed;
-
 
   /**
    * @dev Transfer tokens from one address to another
@@ -163,7 +155,6 @@ contract RI is StandardToken {
     totalSupply = INITIAL_SUPPLY;
     balances[msg.sender] = INITIAL_SUPPLY;
   }
-
 }
 
 contract Sale is RI {
@@ -285,6 +276,7 @@ contract Sale is RI {
       } 
       //pool = 0x112279df207e408a6d8DA87F37a4a0147ECa8b3F; // initial pool wallet address     
     }
+  
   /**
    * @dev Recieve wei and process sale
    */    
@@ -301,10 +293,19 @@ contract Sale is RI {
         processPostSale(msg.value);
       }        
     }
-        
+  
+  /**
+   * @dev Pool wallet address needed to store and use wei
+   * @param _pool Pool address
+   */          
     function setPoolAddress(address _pool) public onlyOwner {
       pool = _pool;  
     }
+  
+  /**
+   * @dev Price is set as stakes per 1 ether
+   * @param _price Price in wei
+   */      
     function setPrice(uint _price) public onlyOwner returns(uint256) {
       price = _price;
     }
@@ -318,6 +319,7 @@ contract Sale is RI {
     function stakeForWei(uint input_wei, uint16 _koef) public view returns(uint) {
       return (((input_wei*price)/1000000000000000000) * _koef)/100;    
     }
+  
   /**
    * @dev Translate Stakes to wei
    * @param input_stake is stakes to translate into wei
@@ -327,6 +329,7 @@ contract Sale is RI {
     function weiForStake(uint input_stake, uint16 _koef) public view returns(uint) {
       return (((input_stake*1000000000000000000)/price) * 100)/_koef;
     }
+  
   /**
    * @dev Transfer wei from this contract to pool wallet partially only, 
    *      1) for funding promotion of Stakes sale   
@@ -362,6 +365,7 @@ contract Sale is RI {
         }
       }      
     }
+  
   /**
    * @dev Investor can withdraw part of his/her investment.
    *      A size of this part depends on how many financial periods last and how many remained.
@@ -405,6 +409,7 @@ contract Sale is RI {
       saleStat[address_to].stakes += _stakes; 
       Transfer(owner, address_to, _stakes); // eventing  
     }
+  
   /**
    * @dev Distribute bounty rewards for bounty tasks
    * @param address_to is address of bounty hunter
@@ -416,6 +421,7 @@ contract Sale is RI {
       balances[address_to] = balances[address_to].add(_stakes); // to
       distributedBountyStakes += _stakes; // adding to total bounty distributed    
     }
+  
   /**
    * @dev Process pre sale: supply more Stakes for regular price 
    */       
@@ -445,6 +451,7 @@ contract Sale is RI {
         saleTransfer(msg.sender, stakes, pre_sale_wei); // supply  pre sold Stakes to investor        
       }      
     }
+  
   /**
    * @dev Process bonus sale: save invested wei value for further distribution of bonus Stakes.
    *      Process regular sale if here are more wei then needed for remained bonus Stakes.   
@@ -495,6 +502,7 @@ contract Sale is RI {
         processRegularSale(regular_wei); // we have Stakes to get regular sale Stakes
       }    
     }
+  
   /**
    * @dev Process regular sale: sell Stakes for regular price.
    * @param input_wei is wei value for investment     
@@ -525,6 +533,7 @@ contract Sale is RI {
         saleTransfer(msg.sender, stakes, regular_wei); // distribute Stakes   
       }  
     }
+  
   /**
    * @dev Process overcap sale: sell Stakes for regular price but supply less.
    * @param overcap_wei wei value for investment     
@@ -538,7 +547,9 @@ contract Sale is RI {
       investedToOvercapTotal += overcap_wei; // add this wei to total (all investors) overcap invested value   
     }    
     
-    uint64 bonusInvestorsDistributedCount=0;
+    // additional variable for distribution of bonus Stakes in two or more stages
+    uint64 bonusInvestorsDistributedCount = 0;
+  
   /**
    * @dev Distribute bonus Stakes. Perform after bonus sale period.
    *      Bonus Stakes cap is distributed fully among bonus investors.   
@@ -560,6 +571,7 @@ contract Sale is RI {
             }
         }
     }
+  
   /**
    * @dev Process post sale: sell Stakes for increased price after end date of regular sale.
    * @param input_wei is wei value for investment     
@@ -595,6 +607,7 @@ contract Sale is RI {
         }  
       }    
     }
+  
   /**
    * @dev Let investors to withdraw their overcap invested wei, if they are not satisfied.
    */     
@@ -607,8 +620,10 @@ contract Sale is RI {
       investedToOvercapTotal -= overcap_wei;
       msg.sender.transfer(overcap_wei);          
     }
+    
     // additional variable for distribution of overcap Stakes in two or more stages
-    uint64 overcapInvestorsDistributedCount=0;
+    uint64 overcapInvestorsDistributedCount = 0;
+  
   /**
    * @dev Distribute overcap Stakes. Perform after overcap investment planning period.     
    * @param count how many investors to process (needed if investors too many and cann't process all - out of gas)    
@@ -634,6 +649,7 @@ contract Sale is RI {
         }  
       }
     }
+  
   /**
    * @dev Burn all unsold Stakes. Only after business planned period.
    */     
@@ -647,6 +663,7 @@ contract Sale is RI {
       totalSupply -= overcap; // decrease total Stakes supply
       unsoldStakesBurned = true; // to unlock unFreeze 
     }
+  
   /**
    * @dev Unfreeze team Stakes. Only after excessed Stakes have burned.
    */      
