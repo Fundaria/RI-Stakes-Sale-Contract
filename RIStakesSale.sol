@@ -146,7 +146,7 @@ contract RI is StandardToken {
   string public constant name = "FundariaToken";
   string public constant symbol = "RI";
   uint8 public constant decimals = 0;
-  uint256 public constant INITIAL_SUPPLY = 1823111; // 1823111
+  uint256 public constant INITIAL_SUPPLY = 1957584; // 1957584
 
   /**
    * @dev Constructor that gives msg.sender all of existing tokens.
