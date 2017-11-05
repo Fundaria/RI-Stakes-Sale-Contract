@@ -335,7 +335,7 @@ contract Sale is RI {
    *      1) for funding promotion of Stakes sale   
    *      2) according to share (finance_periods_last + current_finance_period) / business_planned_period
    */    
-    function transferToPool() internal onlyOwner {      
+    function transferToPool() onlyOwner {      
       // promotional funds
       if(now < regularSaleEndDate) {
         require(withdrawnAmountForSalePromotion < maxAmountForSalePromotion); // withdrawn not maximum promotional funds
